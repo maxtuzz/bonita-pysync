@@ -8,7 +8,7 @@
 # - Checks for profiles BasicAppAccess, CSRStaff and creates them if not present
 # - Gets 'User' profile details
 # - Assigns previously created roles to required profiles
-# - Gets users from ldap group 'bpmusers'
+# - Gets all users from groups specified in 'groups.conf'
 # - Checks if each user is in bonita
 # - Creates user if they don't exist
 # - Updates their contact information with latest ldap data
