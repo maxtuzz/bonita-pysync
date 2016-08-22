@@ -62,18 +62,18 @@ rest_calls += 1
 # ------------------------------------
 
 # Bare minimum required to process a user
-def empty():
+def valid():
     if upi and mail and firstName:
-        return False
-    else:
         return True
+    else:
+        return False
 
 
 # ------------------------------------
 # Import environment
 # ------------------------------------
 print("# ------------------------------------\n"
-      "# BonitaBPM Environment Synchronize\n"
+      "# BonitaBPM Environment Synchronizer\n"
       "# Author: Max Tuzzolino-Smith\n"
       "# ------------------------------------\n")
 
@@ -173,14 +173,16 @@ except IndexError:
 # Add member role id to BasicAppAccess list
 app_access_roles.append(uoa_mem_rid)
 
-# Add admin user to 'Member' role (for BasicAppAccess privileges)
-requests.post("{bonita_url}/API/identity/membership".format(bonita_url=url),
-              headers=headers, data=json.dumps(
-        {
-            'user_id': admin_id,
-            'group_id': uoa_gid,
-            'role_id': uoa_mem_rid
-        }))
+# # Add admin user to 'Member' role (for BasicAppAccess privileges)
+# requests.post("{bonita_url}/API/identity/membership".format(bonita_url=url),
+#               headers=headers, data=json.dumps(
+#         {
+#             'user_id': admin_id,
+#             'group_id': uoa_gid,
+#             'role_id': uoa_mem_rid
+#         })
+# )
+
 rest_calls += 1
 
 # Developers
@@ -450,11 +452,11 @@ print("Importing users from groups: {}".format(groups))
 for user in users:
 
     # Reset person details
-    upi = ""
-    mail = ""
-    firstName = ""
-    lastName = "-"
-    personalTitle = ""
+    upi = ''
+    mail = ''
+    firstName = ''
+    lastName = '-'
+    personalTitle = ''
 
     # Group filters for differing logic
     api_team = False
@@ -485,13 +487,14 @@ for user in users:
             mpd = True
 
     # Only continue if all correct values are found
-    if not empty():
+    if valid():
         # Try fetch user information
         try:
             # Fetch bonita_id from our REST API extension
             bonita_id = requests.get(
                 "{bonita_url}/API/identity/user?p=0&c=100&f=userName={username}".format(bonita_url=url, username=upi),
                 headers=headers).json()[0]['id']
+
             rest_calls += 1
 
         except IndexError:
@@ -613,12 +616,10 @@ for user in users:
             # Placeholder code for when users are exported into bpmusers group
             print("User {} detected as MPD user. Assigning MPD membership.".format(upi))
 
-        # Output info
-        print("Imported successfully [ UPI: {}, Email: {}, Firstname: {}, Lastname: {}, Bonita ID: {}]".format(
-            upi, mail, firstName, lastName, bonita_id))
-
         # Write bonita_ids to a file (useful in case something goes wrong)
         with open('bonita-ids.txt', 'a') as out:
             out.write("{}\n".format(bonita_id))
 
-print("Environment builder complete. {} REST API calls were needed to build the environment".format(rest_calls))
+print("Environment synchronizer complete. {} REST API calls were needed to sync the environment".format(rest_calls))
+print("{} users were processed. Some might not have been resolved and therefore not imported into Bonita".format(
+    len(users)))
